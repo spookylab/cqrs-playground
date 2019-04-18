@@ -1,0 +1,18 @@
+{
+    "name": "pdrylo-local/cqrs-playground",
+    "authors": [
+        {
+            "name": "pdrylo",
+            "email": "pawel.drylo@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "CqrsPlayground\\": "./"
+        }
+    },
+    "require": {
+        "prooph/common": "^4.3",
+        "prooph/service-bus": "^6.2"
+    }
+}

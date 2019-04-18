@@ -1,0 +1,67 @@
+version: '3'
+
+volumes:
+  data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}
+  dbstorage:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /Users/pdrylo-local/development/db-storage
+
+services:
+  php:
+    image: pdrylo/phalcon:4
+    entrypoint: "php-fpm"
+    command: ""
+    volumes:
+      - data:/var/www
+    # links:
+    #   - db
+    # depends_on:
+    #   - db
+    environment: 
+      - APP_ENV=dev
+    restart: on-failure
+    network_mode: bridge
+  httpd:
+    image: pdrylo/nginx:development
+    ports:
+      - 80
+    volumes:
+      - data:/var/www
+    links:
+      - php
+    depends_on:
+      - php
+    restart: on-failure
+    environment:
+      - PROJECT_NAME=cqrs-playground
+      - PROJECT_WEB_DIR=public
+      - PROJECT_INDEX_FILE=index.php
+      - PROJECT_DEV_INDEX_FILE=index.php
+      - APP_ENV=dev
+      - VIRTUAL_PORT=80
+      - VIRTUAL_HOST=cqrs-playground.localhost
+    network_mode: bridge
+  # db:
+  #   image: mysql:8
+  #   command: --default-authentication-plugin=mysql_native_password --general_log --general_log_file=queries.log
+  #     #--log_output=/var/www
+  #   ports:
+  #     - 32851:3306
+  #   environment:
+  #     - MYSQL_ROOT_PASSWORD=root
+  #     - MYSQL_DATABASE=cqrs_playground
+  #     - MYSQL_USER=cqrs_playground
+  #     - MYSQL_PASSWORD=cqrs_playground
+  #   # volumes:
+  #   #   - dbstorage:/var/lib/mysql
+  #   user: 1000:1000
+  #   restart: on-failure
+  #   network_mode: bridge
