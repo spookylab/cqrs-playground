@@ -2,8 +2,11 @@
 
 use Phalcon\Mvc\View;
 use Phalcon\Mvc\Dispatcher;
+use Phalcon\Events\Manager as EventsManager;
 use Prooph\ServiceBus\CommandBus;
+use Prooph\ServiceBus\QueryBus;
 use Prooph\ServiceBus\Plugin\Router\CommandRouter;
+use Prooph\ServiceBus\Plugin\Router\QueryRouter;
 use CqrsPlayground\Infrastructure\DependencyResolver;
 
 $di->setShared('config', function () use ($config) {
@@ -26,9 +29,16 @@ $di->setShared('db', function () {
 
 $di->set('view', function () {
     $view = new View();
-    $view->setViewsDir(APP_BASE_PATH . '/views');
+    $view->setViewsDir(APP_BASE_PATH . '/Presentation/views');
+    $view->registerEngines([
+        '.phtml' => 'Phalcon\Mvc\View\Engine\Php',
+    ]);
 
     return $view;
+});
+
+$di->setShared('eventsManager', function () {
+    return new EventsManager();
 });
 
 $di->setShared('commandBus', function () {
@@ -38,7 +48,8 @@ $di->setShared('commandBus', function () {
 
     $config = $this->getConfig();
     foreach ($config->commands as $commandName => $commandHandler) {
-        $commandRouter->route($commandName)
+        $commandRouter
+            ->route($commandName)
             ->to(
                 is_callable($commandHandler)
                     ? $commandHandler
@@ -49,4 +60,25 @@ $di->setShared('commandBus', function () {
     $commandRouter->attachToMessageBus($commandBus);
 
     return $commandBus;
+});
+
+$di->setShared('queryBus', function () {
+    $queryBus = new QueryBus();
+    $queryRouter = new QueryRouter();
+    $dependencyResolver = new DependencyResolver($this);
+
+    $config = $this->getConfig();
+    foreach ($config->queries as $queryName => $queryHandler) {
+        $queryRouter
+            ->route($queryName)
+            ->to(
+                is_callable($queryHandler)
+                    ? $queryHandler
+                    : $dependencyResolver->autowire($queryHandler)
+            );
+    }
+
+    $queryRouter->attachToMessageBus($queryBus);
+
+    return $queryBus;
 });

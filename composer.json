@@ -13,6 +13,11 @@
     },
     "require": {
         "prooph/common": "^4.3",
-        "prooph/service-bus": "^6.2"
+        "prooph/service-bus": "^6.2",
+        "react/promise": "^2.7.1"
+    },
+    "require-dev": {
+        "phalcon/ide-stubs": "^3.4",
+        "phalcon/devtools": "4.0.x-dev"
     }
 }

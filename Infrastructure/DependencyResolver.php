@@ -3,7 +3,7 @@
 namespace CqrsPlayground\Infrastructure;
 
 use Phalcon\Di;
-use \InvalidArgumentException;
+use InvalidArgumentException;
 
 class DependencyResolver
 {
